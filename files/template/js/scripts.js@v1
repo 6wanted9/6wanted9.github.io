@@ -1,0 +1,460 @@
+(function($){
+
+    var $w,
+        $html,
+        $body,
+        windowWidth,
+        mobileVersion,
+        isIos,
+        isAndroid,
+        isTouch,
+        $gallery,
+        $slider;
+
+    function initVars() {
+        $w = $(window);
+        $html = $('html');
+        $body = $('body');
+        windowWidth = $w.width();
+        isIos = $html.hasClass('ios');
+        isAndroid = $html.hasClass('android');
+        mobileVersion = windowWidth <= 800;
+        isTouch = 'ontouchstart' in window;
+        $w.on('resize', function() {
+            windowWidth = $w.width();
+            mobileVersion = windowWidth <= 800;
+        });
+    }
+
+    // Stretching contacts page to full height
+    function stretchContacts() {
+        if ($('.contacts_content').length == 0) return;
+        var $wrapper = $('.wrapper'),
+            $inner = $('.wrapper-inner'),
+            initialHeight = $inner.outerHeight();
+        function checkHeight() {
+            if (mobileVersion) return;
+            if ($wrapper.outerHeight() > initialHeight) {
+                $body.addClass('stretch');
+            }
+            else {
+                $body.removeClass('stretch');
+            }
+        }
+        $(window).on('resize', function() {
+            checkHeight();
+        });
+        checkHeight();
+    }
+
+    function initReactImage() {
+        if (mobileVersion || isIos || isAndroid) return;
+        var pWidth, pHeight, $this, $bg, $hover, origin;
+        function onMouseIn(e) {
+            $this = $(this);
+            pWidth = $this.width();
+            pHeight = $this.height();
+            $bg = $this.find('.bg');
+            $hover = $this.find('.hover');
+            onMouseMove(e);
+            $bg.stop().animate({ transform: 'scale(1.04,1.04)' }, 300);
+            $this.on('mousemove', onMouseMove);
+        }
+        function onMouseOut() {
+            if (!$bg) return;
+            $bg.stop().animate({ transform: 'scale(1,1)' }, 300);
+            $this.off('mousemove', onMouseMove);
+        }
+        function onMouseMove(e) {
+            if(typeof e.offsetX === "undefined" || typeof e.offsetY === "undefined") {
+                var targetOffset = $this.offset();
+                e.offsetX = e.pageX - targetOffset.left;
+                e.offsetY = e.pageY - targetOffset.top;
+            }
+            origin = (e.offsetX/pWidth*100) + '% ' + (e.offsetY/pHeight*100) + "%";
+            $bg.css({
+                '-webkit-transform-origin':  origin,
+                '-moz-transform-origin':     origin,
+                '-ms-transform-origin':      origin,
+                '-o-transform-origin':       origin,
+                'transform-origin':          origin
+            });
+        }
+        $('.react_image').hover(onMouseIn, onMouseOut);
+    }
+
+    function initMap() {
+        var mapStyles = [
+            {
+                "featureType": "water",
+                "elementType": "geometry.fill",
+                "stylers": [
+                    { "color": "#162e48" }
+                ]
+            },{
+                "featureType": "water",
+                "elementType": "geometry.stroke",
+                "stylers": [
+                    { "color": "#000000" },
+                    { "weight": 0.5 }
+                ]
+            },{
+                "featureType": "road.highway",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "road.local",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "road.arterial",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "landscape.man_made",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#121c28" }
+                ]
+            },{
+                "featureType": "landscape.natural",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "road",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    { "color": "#333333" },
+                    { "visibility": "on" }
+                ]
+            },{
+                "featureType": "poi",
+                "elementType": "labels",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "water",
+                "elementType": "labels",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "transit.station",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    { "color": "#74c3e9" },
+                    { "weight": 0.1 }
+                ]
+            },{
+                "featureType": "transit.station.rail",
+                "elementType": "labels.icon",
+                "stylers": [
+                    { "invert_lightness": true },
+                    { "hue": "#3e6ea8" }
+                ]
+            },{
+                "featureType": "transit.station.bus",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "transit.station",
+                "elementType": "labels.text.stroke",
+                "stylers": [
+                    { "visibility": "on" },
+                    { "color": "#246dbc" },
+                    { "weight": 1 }
+                ]
+            },{
+                "featureType": "transit.line",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "poi",
+                "elementType": "geometry",
+                "stylers": [
+                    { "color": "#172230" }
+                ]
+            },{
+                "featureType": "poi",
+                "elementType": "labels",
+                "stylers": [
+                    { "color": "#808080" },
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "road",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    { "visibility": "on" },
+                    { "color": "#000000" }
+                ]
+            },{
+                "featureType": "road",
+                "elementType": "labels.text.stroke",
+                "stylers": [
+                    { "visibility": "on" },
+                    { "weight": 2.5 },
+                    { "color": "#e8e8e8" }
+                ]
+            },{
+                "featureType": "administrative",
+                "elementType": "labels.text.fill",
+                "stylers": [
+                    { "color": "#74c3e9" },
+                    { "weight": 0.1 }
+                ]
+            },{
+                "featureType": "administrative",
+                "elementType": "labels.text.stroke",
+                "stylers": [
+                    { "visibility": "on" },
+                    { "color": "#246dbc" },
+                    { "weight": 1 }
+                ]
+            },{
+                "featureType": "transit.station.airport",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "administrative",
+                "elementType": "geometry.stroke",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "road.highway",
+                "elementType": "labels",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            },{
+                "featureType": "road",
+                "elementType": "geometry.stroke",
+                "stylers": [
+                    { "visibility": "off" }
+                ]
+            }];
+        $('.contacts-map').each(function() {
+
+            var latLng = new google.maps.LatLng(mapCenter[0],mapCenter[1]),
+                mapOptions = {
+                    zoom: 16,
+                    center: latLng,
+                    disableDefaultUI: true,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                    };
+
+            // create map
+            var map = new google.maps.Map(this, mapOptions);
+            var styledMap =  new google.maps.StyledMapType(mapStyles, {name: "Styled Map"})
+            map.mapTypes.set('map_style', styledMap);
+            map.setMapTypeId('map_style');
+
+            // add marker
+            var markerIcon = new google.maps.MarkerImage('/files/template/images/map-marker.png',
+                    new google.maps.Size(60, 73),
+                    new google.maps.Point(0,0),
+                    new google.maps.Point(21, 68)
+                );
+            var marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                icon: markerIcon
+            });
+
+        });
+    }
+
+    function initItemText() {
+        $('.item-header').each(function() {
+            var $this = $(this),
+                $more = $this.find('.more_btn'),
+                $close = $this.find('.close');
+            $more.click(function() {
+                $this.addClass('show_extra');
+            });
+            $close.click(function() {
+                $this.removeClass('show_extra');
+            });
+        });
+    }
+
+    function initGallery() {
+        //if (mobileVersion) return;
+        $gallery = $('.gallery');
+        $slider = $gallery.find('.slidee');
+        var $videos = $('.video'),
+            $close = $gallery.find('.close');
+        if (!$close.length) {
+            $close = $('<div class="close"></div>');
+            $gallery.append($close);
+        }
+        function stopVideos() {
+            $videos.each(function() {
+                $(this).api('pause');
+            });
+        }
+        $close.click(function(e) {
+            $html.removeClass('show_gallery');
+            stopVideos();
+        });
+        $slider.on('beforeChange', function(event, slick, currentSlide, nextSlide){
+            stopVideos();
+        });
+        $slider.on('init reInit', function(slick){
+            $slider.find('.item .img').css('max-height', $slider.height());
+        });
+        $slider.slick({
+            arrows: true,
+            dots: false,
+            draggable: false,
+            centerMode: true,
+            centerPadding: '170px',
+            infinite: false,
+            speed: 400,
+            slidesToShow: 1,
+            slidesToScroll: 1,
+            focusOnSelect: true,
+            responsive: [
+                {
+                    breakpoint: 640,
+                    settings: {
+                        centerPadding: '0'
+                    }
+                }
+            ]
+        });
+    }
+
+    function initSingleProject() {
+        if (!$('.gallery').length) return;
+        initGallery();
+        $('.photo, .videoReplacement').each(function(i) {
+            $(this).click(function() {
+                $slider.slick('slickGoTo', i, false);
+                setTimeout(function() {
+                    $html.addClass('show_gallery');
+                },100);
+            });
+        });
+    }
+
+    function initMobileProjectView() {
+        // temporary disabe
+        return;
+        if (mobileVersion && mobGallery) {
+            $body.append('<div class="gallery"><div class="slidee"></div></div>');
+            initGallery();
+            var sliderItems = 0;
+            function addItems(id) {
+                while (sliderItems) {
+                    sliderItems--;
+                    $slider.slick('slickRemove', 0);
+                }
+                sliderItems = mobGallery[id].length;
+                for(var i = 0; i < mobGallery[id].length; i++) {
+                    if (!mobGallery[id][i]['youtubeId']) {
+                        $slider.slick('slickAdd',
+                            '<div class="item">' +
+                            '<div class="hover">' +
+                            '<div class="table"><div>' +
+                            '<div class="img"><img src="' + mobGallery[id][i]['hover'] + '" alt=""/></div>' +
+                            '</div></div>' +
+                            '</div>' +
+                            '</div>'
+                        );
+                    }
+                    else {
+                        $slider.slick('slickAdd',
+                            '<div class="item">' +
+                                '<div class="video-wrapper">' +
+                                    '<iframe src="//player.vimeo.com/video/' + mobGallery[id][i]['youtubeId'] + '?api=1" class="video" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>' +
+                                '</div>' +
+                                '<div class="dummy"></div>' +
+                            '</div>'
+                        );
+                    }
+                }
+            }
+            $('.projects .react_image').click(function(e) {
+                var id = $(this).attr('data-id');
+                if (!mobGallery[id]) return;
+                e.preventDefault();
+                addItems(id);
+                setTimeout(function() {
+                    $html.addClass('show_gallery');
+                },100);
+            });
+        }
+    }
+
+    function initMobileNav() {
+        var $header = $('.header'),
+            $btn = $('.mobile-nav'),
+            $back = $('.header-nav .back');
+        $btn.on(mobileVersion && isTouch ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $header.toggleClass('open-nav');
+        });
+        $back.on(mobileVersion && isTouch ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $header.removeClass('open-nav');
+        });
+    }
+
+    function initVideoPopup() {
+        var $videoPopup = $('#videoPopup');
+        if (!$videoPopup.length) return;
+        $body.append($videoPopup);
+        var video = $videoPopup.find('video')[0];
+        $('#showVideo').on('click', function() {
+            $html.addClass('show_gallery');
+            video.play();
+        });
+        $videoPopup.find('.close').click(function(e) {
+            video.pause();
+            $html.removeClass('show_gallery');
+        });
+    }
+
+	$(document).ready(function() {
+        initVars();
+        stretchContacts();
+        initReactImage();
+        initMap();
+        initItemText();
+        initSingleProject();
+        initMobileProjectView();
+        initMobileNav();
+        initVideoPopup();
+
+        //script from seo
+        var w = $(window).width();
+        var neededWidth = w / 2;
+        $("#s_panel").css({"right": -neededWidth, "width": neededWidth});
+        $("#innerDiv").css({"width": neededWidth * 0.9});
+        $("#seo_text_button").hover(
+            function () {
+                $("#s_panel").css({"right": "0"});
+            },
+            function () {
+                $("#s_panel").css({"right": -neededWidth});
+            }
+        );
+	});
+	
+})(jQuery);
